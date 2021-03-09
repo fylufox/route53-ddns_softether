@@ -7,13 +7,34 @@ VPN_PASSWORD = os.environ['VPN_PASSWORD']
 VPN_HOST = os.environ['VPN_HOST']
 VPN_HUB = os.environ['VPN_HUB']
 
+f_userlist = open('./userlist.conf', 'r')
+conf_userlist = f_userlist.read().split('\n')
+userlist=dict()
+for item in conf_userlist:
+    i = re.split("=", item)
+    userlist[i[0]] = i[1]
+
 args = ['sudo', '/usr/local/vpnserver/vpncmd', VPN_HOST,
         '/SERVER', f'/HUB:{VPN_HUB}', f'/PASSWORD:{VPN_PASSWORD}', '/cmd', 'sessionlist']
 
-sessionlist = subprocess.check_output(args).decode().split(
+or_sessionlist = subprocess.check_output(args).decode().split(
     '----------------+----------------------------------\n')
-sessionlist.pop(0)
-sessionlist[-1] = re.sub('The.command.completed.successfully.\n\n','',sessionlist[-1])
+del args
+or_sessionlist.pop(0)
+or_sessionlist[-1] = re.sub('The.command.completed.successfully.\n\n',
+                         '', or_sessionlist[-1])
+record_ip=dict()
+for item in or_sessionlist:
+    line = item.split('\n')
+    session_id = re.split('\s*\|', line[0])[1]
+    user_name = re.split('\s*\|', line[3])[1]
+    if user_name in userlist.keys():
+        args = ['sudo', '/usr/local/vpnserver/vpncmd', VPN_HOST,
+                '/SERVER', f'/HUB:{VPN_HUB}', f'/PASSWORD:{VPN_PASSWORD}', '/cmd', 'sessionget',session_id]
+        sessioninfo = subprocess.check_output(args).decode().split(
+            '------------------------------------------+----------------------------------------\n')[1]
+        
+        ipaddress = re.split('\s*\|', sessioninfo.split('\n')[0])[1]
+        record_ip[user_name]=dict([('record',userlist[user_name]),('ipaddress',ipaddress)])
 
-for item in sessionlist:
-    print(item)
+print(record_ip)
