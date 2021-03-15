@@ -4,12 +4,31 @@ import os
 import softether
 
 # config
-VPN_PASSWORD = os.environ['VPN_PASSWORD']
-VPN_HOST = os.environ['VPN_HOST']
-VPN_HUB = os.environ['VPN_HUB']
-VPN_COMMAND_PATH = '/usr/local/vpnserver/vpncmd'
+config = dict()
+config_key = ''
+f_config = open('./route53-ddns.conf', 'r')
+file_config = re.split('(\[.+\])\n', f_config.read())
+for item in file_config:
+    if item == '':
+        continue
+    i_conf_key = re.findall('\[(.+)\]', item)
+    if len(i_conf_key) == 0:
+        conf_subkey = dict()
+        for iitem in item.split('\n'):
+            if iitem == '':
+                continue
+            i = re.split(' *= *', iitem)
+            conf_subkey[i[0]] = i[1]
+        config[config_key] = conf_subkey
+    else:
+        config_key = i_conf_key[0]
 
-NOT_CONNECTION_NUM = 5
+VPN_PASSWORD = config['vpn']['VPN_PASSWORD']
+VPN_HOST = config['vpn']['VPN_HOST']
+VPN_HUB = config['vpn']['VPN_HUB']
+VPN_COMMAND_PATH = config['vpn']['VPN_COMMAND_PATH']
+
+NOT_CONNECTION_NUM = int(config['check']['NOT_CONNECTION_NUM'])
 
 # end config.
 
@@ -32,24 +51,6 @@ if os.path.isfile('./saveip'):
                 saveip[i[0]] = i[1]
     f_saveip.close()
 
-config = dict()
-config_key = ''
-f_config = open('./route53-ddns.conf', 'r')
-file_config = re.split('(\[.+\])\n', f_config.read())
-for item in file_config:
-    if item == '':
-        continue
-    i_conf_key = re.findall('\[(.+)\]', item)
-    if len(i_conf_key) == 0:
-        conf_subkey = dict()
-        for iitem in item.split('\n'):
-            if iitem == '':
-                continue
-            i = re.split(' *= *', iitem)
-            conf_subkey[i[0]] = i[1]
-        config[config_key] = conf_subkey
-    else:
-        config_key = i_conf_key[0]
 
 sessionlist = softether.get_sessionlist(
     VPN_COMMAND_PATH, VPN_HOST, VPN_PASSWORD, VPN_HUB)
