@@ -1,0 +1,11 @@
+[Unit]
+Description=route53 DDNS Service.
+After=vpnclient.service
+Requires=vpnclient.service
+
+[Service]
+Type=simple
+ExecStart=/bin/sh /home/ec2-user/develop/route53-ddns_softether/route53-ddns-vpn.sh
+
+[Install]
+WantedBy=multi-user.target

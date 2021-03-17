@@ -1,0 +1,10 @@
+[Unit]
+Description=timer route53 DDNS service.
+
+[Timer]
+OnUnitActiveSec=30m
+Persistent=true
+Unit=route53-ddns-vpn.service
+
+[Install]
+WantedBy=timers.target
