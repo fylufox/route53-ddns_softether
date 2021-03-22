@@ -49,6 +49,8 @@ conf_userlist = f_userlist.read().split('\n')
 f_userlist.close()
 userlist = dict()
 for item in conf_userlist:
+    if item == '':
+        continue
     i = re.split('=', item)
     userlist[i[0]] = i[1]
 

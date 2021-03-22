@@ -5,8 +5,8 @@ import re
 def get_sessionlist(cmdpath, hostname, password, hubname):
     args = ['sudo', cmdpath, hostname,
             '/SERVER', f'/HUB:{hubname}', f'/PASSWORD:{password}', '/cmd', 'sessionlist']
-    or_sessionlist = subprocess.check_output(args).decode().split(
-        '----------------+----------------------------------\n')
+    or_sessionlist = re.split(
+        '-+\+-+\n', subprocess.check_output(args).decode())
     or_sessionlist.pop(0)
     or_sessionlist[-1] = re.sub('The.command.completed.successfully.\n\n',
                                 '', or_sessionlist[-1])
