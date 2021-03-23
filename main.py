@@ -4,6 +4,8 @@ import os
 import boto3
 import softether
 import route53_makerecord
+import slack_webhook
+import requests
 
 # config
 config = dict()
@@ -42,6 +44,9 @@ else:
 HOSTED_ZONE_ID = config['route53']['HOSTED_ZONE_ID']
 
 NOT_CONNECTION_NUM = int(config['check']['NOT_CONNECTION_NUM'])
+
+if 'notifycation' in config.keys():
+    SLACK_WEBHOOK_URL = config['notifycation']['SLACK_WEBHOOK']
 # end config.
 
 f_userlist = open('./userlist.conf', 'r')
@@ -121,6 +126,26 @@ if len(change_batch) > 0:
         ChangeBatch={'Changes': change_batch},
         HostedZoneId=HOSTED_ZONE_ID,
     )
+    if 'SLACK_WEBHOOK_URL' in locals():
+        payload_list = []
+        payload = dict()
+        for item in change_batch:
+            action = item['Action']
+            record_name = item['ResourceRecordSet']['Name']
+            address = item['ResourceRecordSet']['ResourceRecords'][0]['Value']
+            payload_list.append(slack_webhook.make_payload_attachments(
+                action, record_name, address))
+        payload["attachments"] = payload_list
+        payload["blocks"] = [{
+            "type": "section",
+            "text": dict(
+                type="markdwn",
+                text="{}件の変更を確認しました。".format(len(change_batch))
+            )
+        }]
+        res = slack_webhook.push_slack_webhook(payload, SLACK_WEBHOOK_URL)
+        if res.status_code != 200:
+            print("Webhook Error : "+res.text+"[{}]".format(res.status_code))
 
 f_newsaveip = open('./saveip', 'w')
 for item in new_saveip:
