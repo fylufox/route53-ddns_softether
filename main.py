@@ -139,7 +139,7 @@ if len(change_batch) > 0:
         payload["blocks"] = [{
             "type": "section",
             "text": dict(
-                type="markdwn",
+                type="mrkdwn",
                 text="{}件の変更を確認しました。".format(len(change_batch))
             )
         }]
