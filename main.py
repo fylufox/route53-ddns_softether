@@ -5,6 +5,7 @@ import boto3
 import softether
 import route53_makerecord
 import slack_webhook
+import sys
 import requests
 
 # config
@@ -70,9 +71,15 @@ if os.path.isfile('./saveip'):
                 saveip[i[0]] = i[1]
     f_saveip.close()
 
-
-sessionlist = softether.get_sessionlist(
-    VPN_COMMAND_PATH, VPN_HOST, VPN_PASSWORD, VPN_HUB)
+try:
+    sessionlist = softether.get_sessionlist(
+        VPN_COMMAND_PATH, VPN_HOST, VPN_PASSWORD, VPN_HUB)
+except:
+    subprocess.check_output(['sudo', 'systemctl', 'restart', 'vpnserver.service'])
+    res = slack_webhook.push_slack_webhook("VPNプロセスを再起動しました。", SLACK_WEBHOOK_URL)
+    if res.status_code != 200:
+        print("Webhook Error : "+res.text+"[{}]".format(res.status_code))
+    sys.exit()
 
 record_ip = dict()
 for item in sessionlist:
