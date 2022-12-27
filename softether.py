@@ -27,7 +27,7 @@ def get_sessionlist(cmdpath, hostname, password, hubname):
 def get_sessioninfo_ip(cmdpath, hostname, password, hubname, session_id):
     args = ['sudo', cmdpath, hostname,
             '/SERVER', f'/HUB:{hubname}', f'/PASSWORD:{password}', '/cmd', 'sessionget', session_id]
-    sessioninfo = subprocess.check_output(args).decode().split(
-        '------------------------------------------+----------------------------------------\n')[1]
-    ipaddress = re.split('\s*\|', sessioninfo.split('\n')[0])[1]
+    
+    sessioninfo = re.split('-*\+-*',subprocess.check_output(args).decode())[1]
+    ipaddress = re.split('\s*\|', sessioninfo.split('\n')[1])[1]
     return ipaddress
