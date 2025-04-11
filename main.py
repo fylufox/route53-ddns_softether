@@ -40,7 +40,7 @@ if 'aws' in config.keys():
                            aws_access_key_id=ACCESS_KEY,
                            aws_secret_access_key=SECRET_KEY)
 else:
-    route53 = boto3.client('rotue53')
+    route53 = boto3.client('route53')
 
 HOSTED_ZONE_ID = config['route53']['HOSTED_ZONE_ID']
 
